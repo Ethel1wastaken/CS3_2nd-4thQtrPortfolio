@@ -102,5 +102,3 @@ function mainLoop() {
     render(state);
     state = evolve(state)
 }
-
-setInterval(mainLoop, 400);
