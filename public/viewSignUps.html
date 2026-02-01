@@ -59,23 +59,16 @@
         const clubFilter = document.getElementById("clubFilter");
         const totalCount = document.getElementById("totalCount");
 
-        // read from the localStorage saved as a string - to see if there are anything saved on the user's computer
         let acctString = localStorage.getItem("accounts");
 
-        // render function builds the table rows and updates total count
-        function renderTable(accountList, filterClub = 'all') {
+
+        function renderTable(accList, filterClub = 'all') {
             const header = "<tr><th>Username</th><th>Student ID</th><th>Full Name</th><th>DOB</th><th>Email</th><th>Phone</th><th>Grade</th><th>Club</th></tr>";
             let rows = "";
 
-            if (!accountList || Object.keys(accountList).length === 0) {
-                results.innerHTML = header + "<tr><td colspan='8'>No Accounts Found</td></tr>";
-                totalCount.textContent = "Total sign-ups: 0";
-                return;
-            }
-
             let count = 0;
-            for (let key in accountList) {
-                const acct = accountList[key];
+            for (let key in accList) {
+                const acct = accList[key];
                 const club = acct.club || "";
 
                 if (filterClub === 'all' || club === filterClub) {
@@ -103,30 +96,25 @@
         if (!acctString) {
             renderTable(null);
         } else {
-            const accountList = JSON.parse(acctString); // converts string into the correct data type
-            console.log(accountList);
+            const accList = JSON.parse(acctString);
+            console.log(accList);
 
-            // build unique club list from saved accounts
             const clubs = new Set();
-            for (let key in accountList) {
-                if (accountList[key].club) clubs.add(accountList[key].club);
+            for (let uhruy in accList) {
+                if (accList[uhruy].club) clubs.add(accList[uhruy].club);
             }
 
-            // mapping values to friendly labels used in the form
             const clubLabels = { dnd: 'Intyale', sudoku: 'Sapienara', arts: 'Likha', '3dprint': 'Pisay XYZ', swim: 'Flux' };
 
-            // add options to the filter drop-down
-            for (const c of Array.from(clubs).sort()) {
+            for (const irr of Array.from(clubs).sort()) {
                 const opt = document.createElement('option');
-                opt.value = c;
-                opt.textContent = clubLabels[c] || c;
+                opt.value = irr;
+                opt.textContent = clubLabels[irr] || irr;
                 clubFilter.appendChild(opt);
             }
 
-            // initial render showing all
             renderTable(accountList, 'all');
 
-            // listen for filter change
             clubFilter.addEventListener('change', function() {
                 renderTable(accountList, this.value);
             });
