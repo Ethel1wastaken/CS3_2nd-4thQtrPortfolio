@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        input[type="radio"] { accent-color: yellow; }
+    </style>
 </head>
 <body>
     <form id="movies">
@@ -11,7 +14,6 @@
             <legend>Add a Movie</legend>
                 <label for="Title">Title</label><br>
                 <input type="text" id="Title" required><br><br>
-                
 
                 <label for="Year">Year</label><br>
                 <input type="number" id="Year" required><br><br>
@@ -26,6 +28,7 @@
                     <option value="Sci-Fi">Sci-Fi</option>
                     <option value="Documentary">Documentary</option>
                     <option value="Anime">Anime</option>
+                    <option value="Comedy">Comedy</option>
                 </select><br><br>
 
                 Rating<br>
@@ -38,9 +41,45 @@
                 <input type="submit" value="Add Movie">
         </fieldset>
     </form>
-    
-    
-    
 
+    <h2>Movie List</h2>
+    <div id="movieList"></div>
+
+    <script>
+        const form = document.getElementById('movies');
+        const movieList = document.getElementById('movieList');
+
+        function getStars(rating) {
+            const num = parseInt(rating.replace('star', ''));
+            return '★'.repeat(num);
+        }
+
+        function loadMovies() {
+            const movies = JSON.parse(localStorage.getItem('movies')) || [];
+            movieList.innerHTML = '';
+            movies.forEach(movie => {
+                const div = document.createElement('div');
+                div.textContent = `${movie.title} (${movie.year}) - ${movie.genre}, Rating: ${getStars(movie.rating)}`;
+                movieList.appendChild(div);
+            });
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const movie = {
+                title: document.getElementById('Title').value,
+                year: document.getElementById('Year').value,
+                genre: document.getElementById('Genre').value,
+                rating: document.querySelector('input[name="rating"]:checked').value
+            };
+            const movies = JSON.parse(localStorage.getItem('movies')) || [];
+            movies.push(movie);
+            localStorage.setItem('movies', JSON.stringify(movies));
+            form.reset();
+            loadMovies();
+        });
+
+        loadMovies();
+    </script>
 </body>
 </html>
