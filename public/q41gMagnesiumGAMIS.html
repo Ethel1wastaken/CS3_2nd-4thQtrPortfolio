@@ -5,7 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
-        input[type="radio"] { accent-color: yellow; }
+        * { margin: 0; padding: 0; box-sizing: border-box; image-rendering: pixelated; }
+        
+        body { 
+            background: #000;
+            font-family: monospace;
+            color: #ff0000;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        h2 { 
+            text-align: center; 
+            margin-top: 30px;
+            border-bottom: 2px solid #ff0000;
+            padding-bottom: 10px;
+        }
+        
+        form {
+            background: #000;
+            border: 2px solid #ff0000;
+            padding: 30px;
+            max-width: 450px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        fieldset {
+            border: 2px solid #ff0000;
+            padding: 20px;
+        }
+        
+        legend {
+            color: #ff0000;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+        
+        label {
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #ff0000;
+        }
+        
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #000;
+            color: #ff0000;
+            border: 1px solid #ff0000;
+        }
+        
+        input[type="radio"] { 
+            accent-color: #ff0000;
+            margin-right: 5px;
+        }
+        
+        input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: #ff0000;
+            color: #000;
+            border: 2px solid #ff0000;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        input[type="submit"]:hover {
+            background: #000;
+            color: #ff0000;
+        }
+        
+        #movieList { 
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        #movieList div { 
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #000;
+            border: 1px solid #ff0000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #ff0000;
+        }
+        
+        button { 
+            padding: 6px 12px;
+            background: #ff0000;
+            color: #000;
+            border: 1px solid #ff0000;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        
+        button:hover { 
+            background: #000;
+            color: #ff0000;
+        }
     </style>
 </head>
 <body>
@@ -49,31 +162,70 @@
         const form = document.getElementById('movies');
         const movieList = document.getElementById('movieList');
 
+        // Convert numeric rating to star symbols
         function getStars(rating) {
-            const num = parseInt(rating.replace('star', ''));
-            return '★'.repeat(num);
+            return '★'.repeat(rating);
         }
 
+        // Extract numeric value from radio button string
+        function getRatingValue(ratingString) {
+            return parseInt(ratingString.replace('star', ''));
+        }
+
+        // Load and display all movies from localStorage
         function loadMovies() {
             const movies = JSON.parse(localStorage.getItem('movies')) || [];
             movieList.innerHTML = '';
-            movies.forEach(movie => {
+            movies.forEach((movie, index) => {
                 const div = document.createElement('div');
-                div.textContent = `${movie.title} (${movie.year}) - ${movie.genre}, Rating: ${getStars(movie.rating)}`;
+                div.style.marginBottom = '10px';
+                div.innerHTML = `${movie.title} (${movie.year}) - ${movie.genre}, Rating: ${getStars(movie.rating)} 
+                <button type="button" data-index="${index}" style="margin-left: 10px;">Delete</button>`;
+                
+                const deleteBtn = div.querySelector('button');
+                deleteBtn.addEventListener('click', function() {
+                    if (confirm('Are you sure you want to delete this movie?')) {
+                        movies.splice(index, 1);
+                        localStorage.setItem('movies', JSON.stringify(movies));
+                        loadMovies();
+                    }
+                });
+                
                 movieList.appendChild(div);
             });
         }
 
+        // Handle form submission - add new movie or update existing
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            const movie = {
+            const ratingValue = getRatingValue(document.querySelector('input[name="rating"]:checked').value);
+            
+            const newMovie = {
                 title: document.getElementById('Title').value,
                 year: document.getElementById('Year').value,
                 genre: document.getElementById('Genre').value,
-                rating: document.querySelector('input[name="rating"]:checked').value
+                rating: ratingValue
             };
+            
             const movies = JSON.parse(localStorage.getItem('movies')) || [];
-            movies.push(movie);
+            const existingIndex = movies.findIndex(m => m.title.toLowerCase() === newMovie.title.toLowerCase());
+            
+            // Update existing movie with averaged rating
+            if (existingIndex !== -1) {
+                const oldRating = movies[existingIndex].rating;
+                const newRating = newMovie.rating;
+                const averagedRating = Math.round((oldRating + newRating) / 2);
+                
+                movies[existingIndex] = {
+                    title: newMovie.title,
+                    year: newMovie.year,
+                    genre: newMovie.genre,
+                    rating: averagedRating
+                };
+            } else {
+                movies.push(newMovie);
+            }
+            
             localStorage.setItem('movies', JSON.stringify(movies));
             form.reset();
             loadMovies();
